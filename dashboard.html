@@ -259,4 +259,31 @@ new Chart(weeklyCtx, {
         }
     }
 });
+// Department Chart
+const deptCtx = document.getElementById('deptChart').getContext('2d');
+const colors = ['#2563EB','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4','#EC4899'];
+new Chart(deptCtx, {
+    type: 'doughnut',
+    data: {
+        labels: deptData.map(d => d.name),
+        datasets: [{
+            data: deptData.map(d => d.students),
+            backgroundColor: colors.slice(0, deptData.length),
+            borderWidth: 3,
+            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--surface')
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 11 }, padding: 16, boxWidth: 12 }
+            }
+        },
+        cutout: '65%'
+    }
+});
+</script>
+{% endblock %}
 
