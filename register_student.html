@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Student Registration — AttendanceAI{% endblock %}
+
+{% block landing_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration — AttendanceAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .container { position: relative; z-index: 10; width: 100%; max-width: 520px; }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .logo-section { text-align: center; margin-bottom: 32px; }
+        .logo-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #2563EB, #60A5FA);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin: 0 auto 12px;
+        }
+        .logo-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: #0F172A;
+        }
+        .logo-text span { color: #2563EB; }
+        .form-title { font-size: 18px; font-weight: 700; color: #0F172A; margin-bottom: 8px; text-align: center; }
+        .form-subtitle { font-size: 13px; color: #64748B; text-align: center; margin-bottom: 28px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 9px;
+            background: #F8FAFC;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .form-control:focus {
+            border-color: #2563EB;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-error-msg { color: #EF4444; font-size: 12px; margin-top: 4px; }
+        .form-error { border-color: #FECACA !important; }
+        .terms { font-size: 12px; color: #64748B; margin-bottom: 20px; }
+        .terms a { color: #2563EB; text-decoration: none; }
+        .btn-register {
+            width: 100%;
+            padding: 11px 16px;
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -4px rgba(37, 99, 235, 0.3); }
+        .login-link { text-align: center; font-size: 13px; color: #64748B; margin-top: 20px; }
+        .login-link a { color: #2563EB; font-weight: 600; text-decoration: none; }
+        .alert { padding: 12px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+        .alert-error { background: #FEE2E2; border: 1px solid #FECACA; color: #991B1B; }
+        @media (max-width: 480px) { .card { padding: 28px 20px; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form class="card" method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="logo-section">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h2 class="logo-text">Attendance<span>AI</span></h2>
+            </div>
+            
+            <h3 class="form-title">Student Registration</h3>
+            <p class="form-subtitle">Create your student account to get started</p>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endwith %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.first_name(class="form-control" + (" form-error" if form.first_name.errors else ""), placeholder="First Name") }}
+                    <label class="form-label">First Name *</label>
+                    {% if form.first_name.errors %}<div class="form-error-msg">{{ form.first_name.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.last_name(class="form-control" + (" form-error" if form.last_name.errors else ""), placeholder="Last Name") }}
+                    <label class="form-label">Last Name *</label>
+                    {% if form.last_name.errors %}<div class="form-error-msg">{{ form.last_name.errors[0] }}</div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.email(class="form-control" + (" form-error" if form.email.errors else ""), placeholder="you@example.com") }}
+                <label class="form-label">Email Address *</label>
+                {% if form.email.errors %}<div class="form-error-msg">{{ form.email.errors[0] }}</div>{% endif %}
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.roll_number(class="form-control" + (" form-error" if form.roll_number.errors else ""), placeholder="e.g., CS001") }}
+                    <label class="form-label">Roll Number *</label>
+                    {% if form.roll_number.errors %}<div class="form-error-msg">{{ form.roll_number.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.phone(class="form-control", placeholder="Phone Number") }}
+                    <label class="form-label">Phone</label>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.department_id(class="form-control" + (" form-error" if form.department_id.errors else "")) }}
+                    <label class="form-label">Department *</label>
+                    {% if form.department_id.errors %}<div class="form-error-msg">{{ form.department_id.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.semester(class="form-control" + (" form-error" if form.semester.errors else "")) }}
+                    <label class="form-label">Semester *</label>
+                    {% if form.semester.errors %}<div class="form-error-msg">{{ form.semester.errors[0] }}</div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.batch_year(class="form-control" + (" form-error" if form.batch_year.errors else ""), placeholder="2024") }}
+                    <label class="form-label">Batch Year *</label>
+                    {% if form.batch_year.errors %}<div class="form-error-msg">{{ form.batch_year.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.gender(class="form-control") }}
+                    <label class="form-label">Gender</label>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.password(class="form-control" + (" form-error" if form.password.errors else ""), placeholder="Min. 8 characters") }}
+                    <label class="form-label">Password *</label>
+                    {% if form.password.errors %}<div class="form-error-msg">{{ form.password.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.confirm_password(class="form-control" + (" form-error" if form.confirm_password.errors else ""), placeholder="Confirm") }}
+                    <label class="form-label">Confirm Password *</label>
+                    {% if form.confirm_password.errors %}<div class="form-error-msg">{{ form.confirm_password.errors[0] }}</div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="terms">
+                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </div>
+            
+            <button type="submit" class="btn-register">
+                Create Account
+                <i class="fas fa-arrow-right"></i>
+            </button>
+            
+            <div class="login-link">
+                Already have an account? <a href="{{ url_for('auth.login') }}">Sign In</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}
