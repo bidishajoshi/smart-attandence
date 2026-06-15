@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Registration — AttendanceAI{% endblock %}
+
+{% block landing_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Registration — AttendanceAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+   
+</head>
+<body>
+    <div class="container">
+        <form class="card" method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="logo-section">
+                <div class="logo-icon"><i class="fas fa-chalkboard-user"></i></div>
+                <h2 class="logo-text">Attendance<span>AI</span></h2>
+            </div>
+            
+            <h3 class="form-title">Faculty Registration</h3>
+            <p class="form-subtitle">Register as a teacher or faculty member</p>
+            
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Your account will be reviewed and approved by an administrator
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endwith %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.first_name(class="form-control" + (" form-error" if form.first_name.errors else ""), placeholder="First Name") }}
+                    <label class="form-label">First Name *</label>
+                    {% if form.first_name.errors %}<div class="form-error-msg">{{ form.first_name.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.last_name(class="form-control" + (" form-error" if form.last_name.errors else ""), placeholder="Last Name") }}
+                    <label class="form-label">Last Name *</label>
+                    {% if form.last_name.errors %}<div class="form-error-msg">{{ form.last_name.errors[0] }}</div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.email(class="form-control" + (" form-error" if form.email.errors else ""), placeholder="you@institution.edu") }}
+                <label class="form-label">Email Address *</label>
+                {% if form.email.errors %}<div class="form-error-msg">{{ form.email.errors[0] }}</div>{% endif %}
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.employee_id(class="form-control" + (" form-error" if form.employee_id.errors else ""), placeholder="e.g., FAC001") }}
+                    <label class="form-label">Employee ID *</label>
+                    {% if form.employee_id.errors %}<div class="form-error-msg">{{ form.employee_id.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.phone(class="form-control", placeholder="Phone Number") }}
+                    <label class="form-label">Phone</label>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.department_id(class="form-control" + (" form-error" if form.department_id.errors else "")) }}
+                    <label class="form-label">Department *</label>
+                    {% if form.department_id.errors %}<div class="form-error-msg">{{ form.department_id.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.designation(class="form-control", placeholder="e.g., Assistant Professor") }}
+                    <label class="form-label">Designation</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.qualification(class="form-control", placeholder="e.g., M.Tech, PhD") }}
+                <label class="form-label">Qualification</label>
+            </div>
+            
+            <div class="form-group">
+                {{ form.specialization(class="form-control", placeholder="e.g., Software Engineering") }}
+                <label class="form-label">Specialization</label>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.password(class="form-control" + (" form-error" if form.password.errors else ""), placeholder="Min. 8 characters") }}
+                    <label class="form-label">Password *</label>
+                    {% if form.password.errors %}<div class="form-error-msg">{{ form.password.errors[0] }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.confirm_password(class="form-control" + (" form-error" if form.confirm_password.errors else ""), placeholder="Confirm") }}
+                    <label class="form-label">Confirm Password *</label>
+                    {% if form.confirm_password.errors %}<div class="form-error-msg">{{ form.confirm_password.errors[0] }}</div>{% endif %}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-register">
+                Register
+                <i class="fas fa-arrow-right"></i>
+            </button>
+            
+            <div class="login-link">
+                Already registered? <a href="{{ url_for('auth.login') }}">Sign In</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}
