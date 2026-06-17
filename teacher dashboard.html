@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}Teacher Dashboard — AttendanceAI{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('teacher.dashboard') }}" class="nav-item active">
+    <span class="nav-icon"><i class="fas fa-gauge-high"></i></span><span>Dashboard</span>
+</a>
+<a href="{{ url_for('teacher.classes') }}" class="nav-item">
+    <span class="nav-icon"><i class="fas fa-book-open"></i></span><span>My Classes</span>
+</a>
+<a href="{{ url_for('teacher.analytics') }}" class="nav-item">
+    <span class="nav-icon"><i class="fas fa-chart-line"></i></span><span>Analytics</span>
+</a>
+{% if active_session %}
+<div class="nav-section-label" style="margin-top:20px;">Active Session</div>
+<a href="{{ url_for('teacher.camera', session_id=active_session.id) }}" class="nav-item" style="background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA;">
+    <span class="nav-icon"><i class="fas fa-circle" style="animation: pulse 1s infinite; color: #EF4444;"></i></span>
+    <span>Live Camera</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block page_title %}Teacher Dashboard{% endblock %}
+
+{% block topbar_actions %}
+{% if active_session %}
+<a href="{{ url_for('teacher.camera', session_id=active_session.id) }}" class="btn btn-danger btn-sm">
+    <i class="fas fa-circle" style="animation:pulse 1s infinite;"></i> Live Session
+</a>
+{% else %}
+<button onclick="openStartModal()" class="btn btn-primary btn-sm">
+    <i class="fas fa-play"></i> Start Attendance
+</button>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Active Session Alert -->
+{% if active_session %}
+<div style="background: linear-gradient(135deg, #FEE2E2, #FECACA); border: 1px solid #FECACA; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 12px; height: 12px; background: #EF4444; border-radius: 50%; animation: pulse 1s infinite;"></div>
+        <div>
+            <div style="font-weight: 700; color: #991B1B; font-size: 14px;">Active Attendance Session</div>
+            <div style="font-size: 13px; color: #B91C1C;">
+                {{ active_session.class_.name }} — Started {{ active_session.start_time|time }}
+            </div>
+        </div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <a href="{{ url_for('teacher.camera', session_id=active_session.id) }}" class="btn btn-danger btn-sm">
+            <i class="fas fa-video"></i> Open Camera
+        </a>
+        <button onclick="stopSession({{ active_session.id }})" class="btn btn-secondary btn-sm">
+            <i class="fas fa-stop"></i> End Session
+        </button>
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats -->
+<div class="stat-grid mb-6">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #DBEAFE; color: #2563EB;"><i class="fas fa-book-open"></i></div>
+        <div class="stat-value">{{ my_classes|length }}</div>
+        <div class="stat-label">My Classes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #D1FAE5; color: #10B981;"><i class="fas fa-users"></i></div>
+        <div class="stat-value">{{ total_students }}</div>
+        <div class="stat-label">Total Students</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #FEF3C7; color: #F59E0B;"><i class="fas fa-calendar-check"></i></div>
+        <div class="stat-value">{{ today_sessions|length }}</div>
+        <div class="stat-label">Sessions Today</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #EDE9FE; color: #8B5CF6;"><i class="fas fa-chart-bar"></i></div>
+        <div class="stat-value">
+            {% set avg = class_rates|map(attribute='rate')|list %}
+            {% if avg %}{{ (avg|sum / avg|length)|round(1) }}%{% else %}—{% endif %}
+        </div>
+        <div class="stat-label">Avg Attendance Rate</div>
+    </div>
+</div>
+
+<div class="grid-2 mb-6">
+    <!-- My Classes -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">My Classes</h3>
+            <a href="{{ url_for('teacher.classes') }}" style="font-size: 12px; color: var(--primary); text-decoration: none; font-weight: 600;">Manage →</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% for item in class_rates %}
+            <div style="padding: 16px 24px; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{ item.class.name }}</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">
+                            {{ item.class.code }} · {{ item.class.student_count }} students
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 6px; margin-left: 12px;">
+                        <button onclick="openStartModal({{ item.class.id }}, '{{ item.class.name }}')"
+                                class="btn btn-primary btn-sm">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <a href="{{ url_for('teacher.class_detail', class_id=item.class.id) }}" class="btn btn-secondary btn-sm btn-icon">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="progress" style="flex: 1;">
+                        <div class="progress-bar {{ 'success' if item.rate >= 75 else 'warning' if item.rate >= 60 else 'danger' }}"
+                             style="width: {{ item.rate }}%;"></div>
+                    </div>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">{{ item.rate }}%</span>
+                </div>
+            </div>
+            {% else %}
+            <div style="padding: 40px; text-align: center; color: var(--text-muted);">
+                <i class="fas fa-book-open" style="font-size: 36px; opacity: .2; display: block; margin-bottom: 12px;"></i>
+                <p style="font-size: 13px;">No classes created yet</p>
+                <a href="{{ url_for('teacher.classes') }}" class="btn btn-primary btn-sm" style="margin-top: 12px;">Create Class</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Sessions -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Recent Sessions</h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% for session in recent_sessions[:6] %}
+            <a href="{{ url_for('teacher.session_detail', session_id=session.id) }}"
+               style="display: block; padding: 14px 24px; border-bottom: 1px solid var(--border); text-decoration: none; transition: background .15s;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                    <div style="flex: 1;">
+                        <div style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{ session.class_.name }}</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                            {{ session.date|date }} · {{ session.start_time|time }}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge {{ 'badge-success' if session.status.value == 'completed' else 'badge-danger' if session.status.value == 'active' else 'badge-secondary' }}">
+                            {{ session.status.value|title }}
+                        </span>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                            {{ session.present_count }}/{{ session.total_students }}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <div style="padding: 40px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                No sessions yet
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Start Attendance Modal -->
+<div class="modal-backdrop" id="startModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-play" style="color: var(--primary); margin-right: 8px;"></i>Start Attendance Session</h3>
+            <button onclick="closeModal('startModal')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px;">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Select Class *</label>
+                <select id="classSelect" class="form-control">
+                    <option value="">Choose a class...</option>
+                    {% for cls in my_classes %}
+                    <option value="{{ cls.id }}">{{ cls.name }} ({{ cls.code }}) — {{ cls.student_count }} students</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Session Notes (optional)</label>
+                <textarea id="sessionNotes" class="form-control" rows="2" placeholder="Any notes for this session..."></textarea>
+            </div>
+            <div style="background: var(--surface-2); border-radius: 8px; padding: 14px; font-size: 13px; color: var(--text-secondary);">
+                <i class="fas fa-info-circle" style="color: var(--primary); margin-right: 6px;"></i>
+                Once started, the camera will detect and automatically mark attendance for enrolled students.
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeModal('startModal')" class="btn btn-secondary">Cancel</button>
+            <button onclick="startSession()" id="startBtn" class="btn btn-primary">
+                <i class="fas fa-play"></i> Start Session
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openStartModal(classId, className) {
+    if (classId) {
+        document.getElementById('classSelect').value = classId;
+    }
+    document.getElementById('startModal').classList.add('open');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+}
+
+async function startSession() {
+    const classId = document.getElementById('classSelect').value;
+    if (!classId) { showToast('Please select a class', 'error'); return; }
+
+    const btn = document.getElementById('startBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+
+    const data = await apiPost('/teacher/attendance/start', {
+        class_id: parseInt(classId),
+        notes: document.getElementById('sessionNotes').value
+    });
+
+    if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => {
+            window.location.href = `/teacher/attendance/camera/${data.session_id}`;
+        }, 800);
+    } else {
+        showToast(data.message || 'Failed to start session', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-play"></i> Start Session';
+    }
+}
+
+async function stopSession(sessionId) {
+    if (!confirm('End this attendance session?')) return;
+    const data = await apiPost(`/teacher/attendance/stop/${sessionId}`, {});
+    if (data.success) {
+        showToast(`Session ended — Present: ${data.present}, Absent: ${data.absent}`, 'success');
+        setTimeout(() => location.reload(), 1200);
+    }
+}
+</script>
+{% endblock %}
