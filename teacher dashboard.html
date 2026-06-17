@@ -233,7 +233,16 @@ async function startSession() {
         notes: document.getElementById('sessionNotes').value
     });
 
-    
+    if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => {
+            window.location.href = `/teacher/attendance/camera/${data.session_id}`;
+        }, 800);
+    } else {
+        showToast(data.message || 'Failed to start session', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-play"></i> Start Session';
+    }
 }
 
 async function stopSession(sessionId) {
