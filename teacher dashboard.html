@@ -245,7 +245,13 @@ async function startSession() {
     }
 }
 
-
+async function stopSession(sessionId) {
+    if (!confirm('End this attendance session?')) return;
+    const data = await apiPost(`/teacher/attendance/stop/${sessionId}`, {});
+    if (data.success) {
+        showToast(`Session ended — Present: ${data.present}, Absent: ${data.absent}`, 'success');
+        setTimeout(() => location.reload(), 1200);
+    }
 }
 </script>
 {% endblock %}
