@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Attendance Records — AttendanceAI{% endblock %}
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-gauge-high"></i></span><span>Dashboard</span></a>
+<a href="{{ url_for('admin.students') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-graduation-cap"></i></span><span>Students</span></a>
+<a href="{{ url_for('admin.teachers') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-chalkboard-user"></i></span><span>Teachers</span></a>
+<a href="{{ url_for('admin.departments') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-building"></i></span><span>Departments</span></a>
+<a href="{{ url_for('admin.classes') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-book-open"></i></span><span>Classes</span></a>
+<a href="{{ url_for('admin.attendance') }}" class="nav-item active"><span class="nav-icon"><i class="fas fa-calendar-check"></i></span><span>Attendance</span></a>
+<a href="{{ url_for('admin.reports') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-file-chart-column"></i></span><span>Reports</span></a>
+<a href="{{ url_for('analytics.dashboard') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-chart-line"></i></span><span>Analytics</span></a>
+<a href="{{ url_for('admin.audit_logs') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-scroll"></i></span><span>Audit Logs</span></a>
+<a href="{{ url_for('admin.settings') }}" class="nav-item"><span class="nav-icon"><i class="fas fa-gear"></i></span><span>Settings</span></a>
+{% endblock %}
+{% block page_title %}Attendance Records{% endblock %}
+{% block content %}
+<!-- Date Filter -->
+<div class="card mb-6">
+    <div class="card-body" style="padding:16px 24px;">
+        <form method="GET" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <div>
+                <label class="form-label" style="display:block;margin-bottom:4px;">Date</label>
+                <input type="date" name="date" class="form-control" value="{{ date_filter }}" style="width:180px;">
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                <a href="{{ url_for('admin.reports') }}" class="btn btn-secondary"><i class="fas fa-download"></i> Export</a>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:16px;text-align:center;">
+                <div>
+                    <div style="font-size:22px;font-weight:800;color:#10B981;">{{ records.total }}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">Records</div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Attendance for {{ date_filter }}</h3>
+        <span class="badge badge-primary">{{ records.total }} records</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Student</th><th>Class</th><th>Date</th><th>Time In</th><th>Status</th><th>Confidence</th><th>Marked By</th></tr>
+            </thead>
+            <tbody>
+                {% for record in records.items %}
+                <tr style="border-left:3px solid {{ '#10B981' if record.status.value=='present' else '#EF4444' if record.status.value=='absent' else '#F59E0B' if record.status.value=='late' else '#06B6D4' }};">
+                    <td>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ record.student.user.full_name }}</div>
+                        <div style="font-size:11px;color:var(--text-muted);">{{ record.student.roll_number }}</div>
+                    </td>
+                    <td style="font-size:13px;">{{ record.class_.name }}</td>
+                    <td style="font-size:13px;">{{ record.date|date }}</td>
+                    <td style="font-size:13px;">{{ record.time_in|time if record.time_in else '—' }}</td>
+                    <td>
+                        <span class="badge {{ 'badge-success' if record.status.value=='present' else 'badge-danger' if record.status.value=='absent' else 'badge-warning' if record.status.value=='late' else 'badge-info' }}">
+                            {{ record.status.value|title }}
+                        </span>
+                    </td>
+                    <td style="font-size:13px;">{{ '%.0f%%'|format(record.confidence_score*100) if record.confidence_score else '—' }}</td>
+                    <td style="font-size:12px;color:var(--text-muted);">{{ record.marked_by|replace('_',' ')|title }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" style="text-align:center;padding:60px;color:var(--text-muted);">
+                    <i class="fas fa-calendar-xmark" style="font-size:36px;opacity:.2;display:block;margin-bottom:12px;"></i>No records for this date
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if records.pages > 1 %}
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:var(--text-muted);">Showing {{ records.per_page*(records.page-1)+1 }}–{{ [records.per_page*records.page,records.total]|min }} of {{ records.total }}</span>
+        <div class="pagination" style="margin-left:auto;">
+            {% if records.has_prev %}<a href="{{ url_for('admin.attendance',page=records.prev_num,date=date_filter) }}" class="page-link"><i class="fas fa-chevron-left"></i></a>{% endif %}
+            {% for p in records.iter_pages() %}{% if p %}<a href="{{ url_for('admin.attendance',page=p,date=date_filter) }}" class="page-link {{ 'active' if p==records.page }}">{{ p }}</a>{% endif %}{% endfor %}
+            {% if records.has_next %}<a href="{{ url_for('admin.attendance',page=records.next_num,date=date_filter) }}" class="page-link"><i class="fas fa-chevron-right"></i></a>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
