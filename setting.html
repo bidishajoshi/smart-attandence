@@ -82,43 +82,7 @@
         </div>
     </div>
 
-    <!-- System Info -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-circle-info" style="color:var(--primary);margin-right:8px;"></i>System Information</h3>
-        </div>
-        <div class="card-body" style="padding:0;">
-            {% for label, value in [
-                ('Application', 'AttendanceAI v1.0.0'),
-                ('Framework', 'Flask 3.0'),
-                ('Database', 'PostgreSQL'),
-                ('Face Recognition', 'face_recognition + OpenCV'),
-                ('Environment', 'Production'),
-            ] %}
-            <div style="padding:12px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:13px;color:var(--text-muted);">{{ label }}</span>
-                <span style="font-size:13px;font-weight:600;color:var(--text-primary);">{{ value }}</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- Security -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-shield-halved" style="color:var(--primary);margin-right:8px;"></i>Security</h3>
-        </div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
-            {% for label, ok in [
-                ('CSRF Protection', True), ('Password Hashing (bcrypt)', True),
-                ('SQL Injection Prevention', True), ('Session Security', True),
-                ('Rate Limiting', True), ('XSS Protection', True),
-            ] %}
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface-2);border-radius:8px;">
-                <span style="font-size:13px;color:var(--text-secondary);">{{ label }}</span>
-                <span class="badge {{ 'badge-success' if ok else 'badge-danger' }}">
-                    <i class="fas {{ 'fa-check' if ok else 'fa-times' }}"></i>
-                    {{ 'Enabled' if ok else 'Disabled' }}
+    <!
                 </span>
             </div>
             {% endfor %}
