@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Reset Password — AttendanceAI{% endblock %}
+{% block landing_content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password — AttendanceAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        
+                <label>Confirm Password</label>
+                {{ form.confirm_password(class="form-control", placeholder="Re-enter password") }}
+                {% if form.confirm_password.errors %}<p style="color:#EF4444;font-size:12px;margin-top:4px">{{ form.confirm_password.errors[0] }}</p>{% endif %}
+            </div>
+            <button type="submit" class="btn"><i class="fas fa-check"></i> Reset Password</button>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}
