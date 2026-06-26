@@ -236,3 +236,47 @@ def capture_face():
         return jsonify({'success': False, 'message': 'Failed to process image'}), 500
 
 
+@student.route('/face-registration/delete/<int:embedding_id>', methods=['DELETE'])
+@login_required
+@student_required
+def delete_face(embedding_id):
+    """Delete a face embedding."""
+    profile = current_user.student_profile
+    embedding = FaceEmbedding.query.filter_by(
+        id=embedding_id, student_id=profile.id).first_or_404()
+    
+    embedding.is_active = False
+    
+    # Check if any active embeddings remain
+    remaining = FaceEmbedding.query.filter_by(
+        student_id=profile.id, is_active=True).count()
+    if remaining <= 1:
+        profile.face_registered = remaining > 0
+    
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@student.route('/profile')
+@login_required
+@student_required
+def profile():
+    """Student profile page."""
+    student_profile = current_user.student_profile
+    return render_template('student/profile.html', profile=student_profile)
+
+
+@student.route('/reports')
+@login_required
+@student_required
+def reports():
+    """Student reports."""
+    profile = current_user.student_profile
+    
+    # Get per-subject statistics
+    classes = Class.query.join(Enrollment).filter(
+        Enrollment.student_id == profile.id,
+        Enrollment.is_active == True
+    ).all()
+    
+    
