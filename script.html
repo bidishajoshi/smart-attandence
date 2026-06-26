@@ -9,7 +9,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0F172A,#1E293B,#0F172A);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+        .card{background:rgba(255,255,255,.96);border-radius:24px;padding:48px 32px;max-width:420px;width:100%;box-shadow:0 25px 50px rgba(0,0,0,.25)}
+        .icon-wrap{width:64px;height:64px;background:linear-gradient(135deg,#2563EB,#60A5FA);border-radius:20px;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;margin:0 auto 20px}
+        h2{font-family:'Plus Jakarta Sans';font-size:22px;font-weight:800;color:#0F172A;text-align:center;margin-bottom:8px}
+        p{font-size:14px;color:#64748B;text-align:center;margin-bottom:28px}
+        .form-group{margin-bottom:20px}
+        label{display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px;text-transform:uppercase}
+        input{width:100%;padding:11px 14px;border:1.5px solid #E2E8F0;border-radius:9px;background:#F8FAFC;font-size:14px;outline:none;transition:all .2s}
+        input:focus{border-color:#2563EB;background:white;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+        .btn{width:100%;padding:11px;background:linear-gradient(135deg,#2563EB,#3B82F6);color:white;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(37,99,235,.3)}
+        .alert{padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:16px}
+        .alert-error{background:#FEE2E2;border:1px solid #FECACA;color:#991B1B}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-wrap"><i class="fas fa-key"></i></div>
+        <h2>Reset Password</h2>
+        <p>Enter a new password for your account</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for cat, msg in messages %}<div class="alert alert-{{ cat }}">{{ msg }}</div>{% endfor %}
+        {% endwith %}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label>New Password</label>
+                {{ form.password(class="form-control", placeholder="Min. 8 characters") }}
+                {% if form.password.errors %}<p style="color:#EF4444;font-size:12px;margin-top:4px">{{ form.password.errors[0] }}</p>{% endif %}
+            </div>
+            <div class="form-group">
                 <label>Confirm Password</label>
                 {{ form.confirm_password(class="form-control", placeholder="Re-enter password") }}
                 {% if form.confirm_password.errors %}<p style="color:#EF4444;font-size:12px;margin-top:4px">{{ form.confirm_password.errors[0] }}</p>{% endif %}
