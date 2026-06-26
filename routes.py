@@ -279,4 +279,44 @@ def reports():
         Enrollment.is_active == True
     ).all()
     
+    class_reports = []
+    for cls in classes:
+        records = AttendanceRecord.query.filter_by(
+            student_id=profile.id, class_id=cls.id
+        ).order_by(AttendanceRecord.date).all()
+        
+        total = len(records)
+        present = sum(1 for r in records if r.status in [AttendanceStatus.PRESENT, AttendanceStatus.LATE])
+        absent = sum(1 for r in records if r.status == AttendanceStatus.ABSENT)
+        late = sum(1 for r in records if r.status == AttendanceStatus.LATE)
+        pct = (present / total * 100) if total > 0 else 0
+        
+        class_reports.append({
+            'class': cls,
+            'total': total,
+            'present': present,
+            'absent': absent,
+            'late': late,
+            'percentage': round(pct, 1)
+        })
     
+    return render_template('student/reports.html', profile=profile, class_reports=class_reports)
+
+
+@student.route('/export-attendance')
+@login_required
+@student_required
+def export_attendance():
+    """Export student's own attendance."""
+    from app.utils import export_attendance_excel
+    
+    profile = current_user.student_profile
+    records = AttendanceRecord.query.filter_by(student_id=profile.id).order_by(
+        AttendanceRecord.date.desc()).all()
+    
+    output = export_attendance_excel(records)
+    filename = f'attendance_{profile.roll_number}_{date.today().isoformat()}.xlsx'
+    
+    return send_file(output,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                     download_name=filename, as_attachment=True)
