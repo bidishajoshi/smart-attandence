@@ -234,3 +234,8 @@ def export_attendance_pdf(records, title: str = "Attendance Report") -> io.Bytes
         logger.error(f"PDF export error: {e}")
         return io.BytesIO(b"PDF generation failed")
 
+
+def calculate_attendance_stats(records) -> dict:
+    total = len(records)
+    if total == 0:
+        return {'total': 0, 'present': 0, 'absent': 0, 'late': 0, 'excused': 0, 'percentage': 0.0}
