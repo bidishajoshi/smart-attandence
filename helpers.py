@@ -164,4 +164,36 @@ def export_attendance_excel(records) -> io.BytesIO:
                 f"{record.confidence_score:.2f}" if record.confidence_score else 'N/A',
                 record.marked_by.replace('_', ' ').title()
             ]
-           
+            for col, value in enumerate(data, 1):
+                cell = ws.cell(row=row, column=col, value=value)
+                if col == 5:
+                    fill = status_fills.get(record.status.value)
+                    if fill:
+                        cell.fill = fill
+
+        for column in ws.columns:
+            max_length = max(len(str(cell.value or '')) for cell in column)
+            ws.column_dimensions[column[0].column_letter].width = min(max_length + 4, 30)
+
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return output
+    except Exception as e:
+        logger.error(f"Excel export error: {e}")
+        return export_attendance_csv(records)
+
+
+def export_attendance_pdf(records, title: str = "Attendance Report") -> io.BytesIO:
+    try:
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.units import cm
+
+        output = io.BytesIO()
+        doc = SimpleDocTemplate(output, pagesize=landscape(A4), topMargin=1*cm)
+        styles = getSampleStyleSheet()
+        elements = []
+
