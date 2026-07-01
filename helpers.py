@@ -197,3 +197,40 @@ def export_attendance_pdf(records, title: str = "Attendance Report") -> io.Bytes
         styles = getSampleStyleSheet()
         elements = []
 
+        title_style = ParagraphStyle('CustomTitle', parent=styles['Title'], fontSize=18,
+                                     textColor=colors.HexColor('#2563EB'))
+        elements.append(Paragraph(title, title_style))
+        elements.append(Paragraph(f"Generated: {datetime.now().strftime('%B %d, %Y %I:%M %p')}", styles['Normal']))
+        elements.append(Spacer(1, 0.5*cm))
+
+        table_data = [['Date', 'Roll No.', 'Student Name', 'Class', 'Status', 'Time In', 'Confidence']]
+        for record in records:
+            table_data.append([
+                record.date.strftime('%Y-%m-%d'), record.student.roll_number,
+                record.student.user.full_name, record.class_.name,
+                record.status.value.title(),
+                record.time_in.strftime('%H:%M') if record.time_in else 'N/A',
+                f"{record.confidence_score:.0%}" if record.confidence_score else 'N/A'
+            ])
+
+        table = Table(table_data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563EB')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F8FAFC')]),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('PADDING', (0, 0), (-1, -1), 6),
+        ]))
+        elements.append(table)
+        doc.build(elements)
+        output.seek(0)
+        return output
+    except Exception as e:
+        logger.error(f"PDF export error: {e}")
+        return io.BytesIO(b"PDF generation failed")
+
