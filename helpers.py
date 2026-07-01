@@ -489,4 +489,9 @@ def calculate_attendance_stats(records) -> dict:
     attended = present + late
     percentage = (attended / total) * 100 if total > 0 else 0
 
-   
+    return {'total': total, 'present': present, 'absent': absent, 'late': late,
+            'excused': excused, 'attended': attended, 'percentage': round(percentage, 1)}
+
+
+def paginate_query(query, page: int, per_page: int = 20):
+    return query.paginate(page=page, per_page=per_page, error_out=False)
