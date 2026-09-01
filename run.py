@@ -36,27 +36,29 @@ def create_admin():
     """CLI command to create a super admin user."""
     from app import bcrypt
     
-    email = input('Admin email: ')
-    password = input('Admin password: ')
-    first_name = input('First name: ')
-    last_name = input('Last name: ')
-    
-    if User.query.filter_by(email=email.lower()).first():
-        print('❌ Email already registered.')
-        return
-    
-    user = User(
-        email=email.lower(),
-        password_hash=bcrypt.generate_password_hash(password).decode('utf-8'),
-        role=UserRole.SUPER_ADMIN,
-        first_name=first_name,
-        last_name=last_name,
-        is_verified=True,
-        is_active=True
-    )
-    db.session.add(user)
-    db.session.commit()
-    print(f'✅ Super Admin created: {user.full_name} ({user.email})')
+    with app.app_context():
+        db.create_all()
+        email = input('Admin email: ')
+        password = input('Admin password: ')
+        first_name = input('First name: ')
+        last_name = input('Last name: ')
+
+        if User.query.filter_by(email=email.lower()).first():
+            print('❌ Email already registered.')
+            return
+
+        user = User(
+            email=email.lower(),
+            password_hash=bcrypt.generate_password_hash(password).decode('utf-8'),
+            role=UserRole.SUPER_ADMIN,
+            first_name=first_name,
+            last_name=last_name,
+            is_verified=True,
+            is_active=True
+        )
+        db.session.add(user)
+        db.session.commit()
+        print(f'✅ Super Admin created: {user.full_name} ({user.email})')
 
 
 @app.cli.command('seed-db')
