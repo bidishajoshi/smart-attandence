@@ -306,7 +306,9 @@ def reports():
 @student.route('/export-attendance')
 @login_required
 @student_required
-
+def export_attendance():
+    """Export student's own attendance."""
+    from app.utils import export_attendance_excel
     
     profile = current_user.student_profile
     records = AttendanceRecord.query.filter_by(student_id=profile.id).order_by(
